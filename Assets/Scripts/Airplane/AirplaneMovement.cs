@@ -5,7 +5,6 @@ namespace Airplane
     [RequireComponent(typeof(Rigidbody))]
     public class AirplaneMovement : MonoBehaviour
     {
-        
         #region Serialized Variables
 
         [Header("Rotating speeds")]
@@ -56,7 +55,6 @@ namespace Airplane
         [SerializeField] private float turboCooldownSpeed;
 
         [Header("Turbo heat values")]
-        
         [Tooltip("Real-time information about the turbo's current temperature (do not change in the editor)")]
         [Range(0f, 100f)]
         [SerializeField] private float turboHeat;
@@ -86,9 +84,11 @@ namespace Airplane
         [SerializeField] private float sideRayOffset = 5f;
         
         [SerializeField] private float groundCheckDistanceSide = 8f;
-
+        
+        [Range(0f, 180f)]
         [SerializeField] private float maxAngleSide = 10f;
         
+        [Range(0f, 5f)]
         [SerializeField] private float alignmentSpeed = 2f;
 
         #endregion
@@ -143,7 +143,6 @@ namespace Airplane
 
             //Turbo
             _inputTurbo = Input.GetKey(KeyCode.LeftShift);
-            
         }
 
         #region Fly State
@@ -152,7 +151,6 @@ namespace Airplane
         {
             float multiplierXRot = sidewaysMovement * sidewaysMovementXRot;
             float multiplierYRot = sidewaysMovement * sidewaysMovementYRot;
-
             float multiplierYPosition = sidewaysMovement * sidewaysMovementYPosition;
 
             // Right side 
@@ -163,7 +161,6 @@ namespace Airplane
 
                 transform.Rotate(Vector3.up * (invert * multiplierYRot * Time.deltaTime));
                 transform.Rotate(Vector3.right * (-invert * multiplierXRot * _currentPitchSpeed * Time.deltaTime));
-
                 transform.Translate(transform.up * (invert * multiplierYPosition * Time.deltaTime));
             }
 
@@ -174,7 +171,6 @@ namespace Airplane
 
                 transform.Rotate(-Vector3.up * (angle * multiplierYRot * Time.deltaTime));
                 transform.Rotate(Vector3.right * (-angle * multiplierXRot * _currentPitchSpeed * Time.deltaTime));
-
                 transform.Translate(transform.up * (angle * multiplierYPosition * Time.deltaTime));
             }
 
@@ -208,7 +204,6 @@ namespace Airplane
             {
                 transform.Rotate(Vector3.forward * (-_inputH * _currentRollSpeed * Time.deltaTime));
             }
-
 
             if (!_isNearGround || _inputV < 0)
             {
@@ -306,14 +301,14 @@ namespace Airplane
             }
             
             // Ray-cast Side Way
-            Vector3 leftRayDirection = Quaternion.Euler(0, 0, maxAngleSide) * -transform.up;
-            Vector3 rightRayDirection = Quaternion.Euler(0, 0, -maxAngleSide) * -transform.up;
+            Vector3 leftRayDirection = Quaternion.Euler(0, transform.eulerAngles.y, maxAngleSide) * Vector3.down;
+            Vector3 rightRayDirection = Quaternion.Euler(0, transform.eulerAngles.y, -maxAngleSide) * Vector3.down;
 
             Vector3 leftRayOrigin = transform.position + transform.right * sideRayOffset;
             Vector3 rightRayOrigin = transform.position - transform.right * sideRayOffset;
 
-            _isNearGroundLeft = Physics.Raycast(leftRayOrigin, leftRayDirection, groundCheckDistanceSide);
-            _isNearGroundRight = Physics.Raycast(rightRayOrigin, rightRayDirection, groundCheckDistanceSide);
+            _isNearGroundLeft = Physics.Raycast(leftRayOrigin, leftRayDirection, out hit, groundCheckDistanceSide);
+            _isNearGroundRight = Physics.Raycast(rightRayOrigin, rightRayDirection, out hit, groundCheckDistanceSide);
         }
         
         #endregion
@@ -332,31 +327,29 @@ namespace Airplane
             }
             
             // Draw Side-way Gizmo
-            
             Gizmos.color = Color.blue;
 
-            Vector3 leftRayDirection = Quaternion.Euler(0, 0, maxAngleSide) * -transform.up;
-            Vector3 rightRayDirection = Quaternion.Euler(0, 0, -maxAngleSide) * -transform.up;
+            Vector3 leftRayDirection = Quaternion.Euler(0, transform.eulerAngles.y, maxAngleSide) * Vector3.down;
+            Vector3 rightRayDirection = Quaternion.Euler(0, transform.eulerAngles.y, -maxAngleSide) * Vector3.down;
 
             Vector3 leftRayOrigin = transform.position + transform.right * sideRayOffset;
             Vector3 rightRayOrigin = transform.position - transform.right * sideRayOffset;
 
-            Gizmos.DrawLine(leftRayOrigin, leftRayOrigin + leftRayDirection * groundCheckDistance);
-            Gizmos.DrawLine(rightRayOrigin, rightRayOrigin + rightRayDirection * groundCheckDistance);
+            Gizmos.DrawLine(leftRayOrigin, leftRayOrigin + leftRayDirection * groundCheckDistanceSide);
+            Gizmos.DrawLine(rightRayOrigin, rightRayOrigin + rightRayDirection * groundCheckDistanceSide);
 
             // Draw Sphere if check collision.
-            if (Physics.Raycast(leftRayOrigin, Vector3.down, out hit, groundCheckDistanceSide))
+            if (Physics.Raycast(leftRayOrigin, leftRayDirection, out hit, groundCheckDistanceSide))
             {
                 Gizmos.color = Color.green;
                 Gizmos.DrawSphere(hit.point, 0.5f);
             }
     
-            if (Physics.Raycast(rightRayOrigin, Vector3.down, out hit, groundCheckDistanceSide))
+            if (Physics.Raycast(rightRayOrigin, rightRayDirection, out hit, groundCheckDistanceSide))
             {
                 Gizmos.color = Color.green;
                 Gizmos.DrawSphere(hit.point, 0.5f);
             }
         }
-        
     }
 }
