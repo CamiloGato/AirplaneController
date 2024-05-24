@@ -120,7 +120,6 @@ namespace Airplane
         private void Start()
         {
             _rb = GetComponent<Rigidbody>();
-            _rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
             
             _maxSpeed = defaultSpeed;
             _currentSpeed = defaultSpeed;
