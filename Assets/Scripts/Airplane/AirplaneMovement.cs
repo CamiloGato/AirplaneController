@@ -79,6 +79,7 @@ namespace Airplane
         [SerializeField] private float sidewaysMovementYPosition = 0.1f;
 
         [Header("Ground Detection")]
+        [SerializeField] private LayerMask groundMask;
         [SerializeField] private float groundCheckDistance = 10f;
         
         [SerializeField] private float sideRayOffset = 5f;
@@ -291,7 +292,7 @@ namespace Airplane
         private void AlignWithGround()
         {
             // Ray-Cast Ground
-            _isNearGround = Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, groundCheckDistance);
+            _isNearGround = Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, groundCheckDistance, groundMask);
             
             if (_isNearGround)
             {
@@ -307,11 +308,13 @@ namespace Airplane
             Vector3 leftRayOrigin = transform.position + transform.right * sideRayOffset;
             Vector3 rightRayOrigin = transform.position - transform.right * sideRayOffset;
 
-            _isNearGroundLeft = Physics.Raycast(leftRayOrigin, leftRayDirection, out hit, groundCheckDistanceSide);
-            _isNearGroundRight = Physics.Raycast(rightRayOrigin, rightRayDirection, out hit, groundCheckDistanceSide);
+            _isNearGroundLeft = Physics.Raycast(leftRayOrigin, leftRayDirection, out hit, groundCheckDistanceSide, groundMask);
+            _isNearGroundRight = Physics.Raycast(rightRayOrigin, rightRayDirection, out hit, groundCheckDistanceSide, groundMask);
         }
         
         #endregion
+        
+        #if UNITY_EDITOR
         
         private void OnDrawGizmos()
         {
@@ -320,7 +323,7 @@ namespace Airplane
             Gizmos.DrawLine(transform.position, transform.position + Vector3.down * groundCheckDistance);
 
             // Draw Sphere if check collision.
-            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, groundCheckDistance))
+            if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, groundCheckDistance, groundMask))
             {
                 Gizmos.color = Color.green;
                 Gizmos.DrawSphere(hit.point, 0.5f);
@@ -339,17 +342,19 @@ namespace Airplane
             Gizmos.DrawLine(rightRayOrigin, rightRayOrigin + rightRayDirection * groundCheckDistanceSide);
 
             // Draw Sphere if check collision.
-            if (Physics.Raycast(leftRayOrigin, leftRayDirection, out hit, groundCheckDistanceSide))
+            if (Physics.Raycast(leftRayOrigin, leftRayDirection, out hit, groundCheckDistanceSide, groundMask))
             {
                 Gizmos.color = Color.green;
                 Gizmos.DrawSphere(hit.point, 0.5f);
             }
     
-            if (Physics.Raycast(rightRayOrigin, rightRayDirection, out hit, groundCheckDistanceSide))
+            if (Physics.Raycast(rightRayOrigin, rightRayDirection, out hit, groundCheckDistanceSide, groundMask))
             {
                 Gizmos.color = Color.green;
                 Gizmos.DrawSphere(hit.point, 0.5f);
             }
         }
+        
+        #endif
     }
 }
