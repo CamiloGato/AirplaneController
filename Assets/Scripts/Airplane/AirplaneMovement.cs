@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Airplane
 {
     [RequireComponent(typeof(Rigidbody))]
-    public class AirplaneMovement : NetworkBehaviour
+    public class AirplaneMovement : MonoBehaviour
     {
         #region Serialized Variables
 
@@ -118,7 +118,7 @@ namespace Airplane
         
         #endregion
 
-        protected void Awake()
+        protected void Start()
         {
             _rb = GetComponent<Rigidbody>();
             
@@ -129,11 +129,6 @@ namespace Airplane
 
         private void Update()
         {
-            if (!IsOwner)
-            {
-                return;
-            }
-            
             Controls();
             Movement();
             SidewaysForceCalculation();
