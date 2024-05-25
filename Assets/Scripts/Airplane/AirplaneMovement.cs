@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿using FishNet.Object;
+using UnityEngine;
 
 namespace Airplane
 {
     [RequireComponent(typeof(Rigidbody))]
-    public class AirplaneMovement : MonoBehaviour
+    public class AirplaneMovement : NetworkBehaviour
     {
         #region Serialized Variables
 
@@ -117,7 +118,7 @@ namespace Airplane
         
         #endregion
 
-        private void Start()
+        protected void Awake()
         {
             _rb = GetComponent<Rigidbody>();
             
@@ -128,11 +129,20 @@ namespace Airplane
 
         private void Update()
         {
+            if (!IsOwner)
+            {
+                return;
+            }
+            
+            Controls();
             Movement();
             SidewaysForceCalculation();
             DampVelocities();
             AlignWithGround();
-            
+        }
+        
+        private void Controls()
+        {
             //Rotate inputs
             _inputH = Input.GetAxis("Horizontal");
             _inputV = Input.GetAxis("Vertical");
