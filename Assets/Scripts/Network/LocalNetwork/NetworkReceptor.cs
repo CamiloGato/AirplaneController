@@ -5,23 +5,25 @@ using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Network.Common;
-using UnityEngine;
 
 namespace Network.LocalNetwork
 {
-    public class NetworkReceptor : MonoBehaviour
+    public class NetworkReceptor
     {
         public readonly Action<ServerStatus> OnServerBroadcast;
+        
+        private readonly UdpClient _udpClient;
+        private readonly NetworkConfiguration _networkConfiguration;
 
-        private UdpClient _udpClient;
-        private const int BroadcastPort = 8888;
-        private CancellationTokenSource _cancellationTokenSource;
-
-        private void Start()
+        public NetworkReceptor(NetworkConfiguration networkConfiguration)
         {
+            // Store and inject
+            _networkConfiguration = networkConfiguration;
+            
             // SetUp Udp Client and EndPoint
-            _udpClient = new UdpClient(BroadcastPort);
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, BroadcastPort);
+            ushort broadcastPort = _networkConfiguration.broadcastPort;
+            _udpClient = new UdpClient(broadcastPort);
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, broadcastPort);
 
             // Enable send and receive broadcast messages and made the socket reusable by other clients
             _udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
@@ -29,9 +31,9 @@ namespace Network.LocalNetwork
             _udpClient.Client.Bind(endPoint);
 
             // Creation of Cancellation token
-            _cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             
-            ServerListening(_cancellationTokenSource.Token).Forget();
+            ServerListening(cancellationTokenSource.Token).Forget();
         }
 
         private async UniTaskVoid ServerListening(CancellationToken cancellationToken)
@@ -48,11 +50,11 @@ namespace Network.LocalNetwork
             }
             catch (ObjectDisposedException)
             {
-                Debug.Log("UdpClient has been disposed.");
+                UnityEngine.Debug.Log("UdpClient has been disposed.");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Exception in listening task: {ex.Message}");
+                UnityEngine.Debug.LogError($"Exception in listening task: {ex.Message}");
             }
         }
         

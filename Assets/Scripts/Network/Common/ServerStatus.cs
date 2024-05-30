@@ -10,6 +10,7 @@ namespace Network.Common
         private readonly string _ip;
 
         public bool IsAvailable => _serverStatusEnum == ServerStatusEnum.Available;
+        public string Ip => $"{_ip}:{_port}";
 
         public ServerStatus(ServerStatusEnum serverStatusEnum, ushort port, string ip)
         {
